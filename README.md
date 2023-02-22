@@ -6,7 +6,7 @@ Here is the project synopsis in the form of a youtube video:
 https://www.youtube.com/watch?v=vCclufJJdEs&ab_channel=RaghvendraSinghShaktawat
 
 Some of the key features of this project are:
-• Visualized the data present in the form of histograms, line graphs, bar charts, box plots, and density plots
+• Visualized the data present in the form of histograms, line graphs, box plots, and density plots
 • Inserted some NA values into a new data frame so that I can perform mean imputation
 • Performed mean imputation to take care of the missing values
 • Performed the hot-encoding for all the different brands of pizza present in the dataset.
