@@ -19,6 +19,6 @@ Some of the key features of this project are:
 • MODEL 1: LOGISTIC REGRESSION MODEL
 • MODEL 2: RANDOM FOREST MODEL
 • MODEL 3: K-NEAREST NEIGHBORS MODEL
-• MODEL 4: SUPPORT VECTOR MACHINES MODEL
-• Compared the results of all these models using a dotplot
+• MODEL 4: SUPPORT VECTOR MACHINE MODEL
+• Compared the results of all these models using dotplot
 • Created model ensemble
