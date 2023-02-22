@@ -1,0 +1,701 @@
+RAGHVENDRA SINGH SHAKTAWAT
+FINAL PROJECT
+
+
+
+```{r}
+#Using the required libraries
+library(mlbench)
+library(tidyverse)
+library(tidyr)
+library(stringr)
+library(klaR)
+library(psych)
+library(forcats)
+library(caret)
+library(corrplot)
+```
+
+```{r}
+#uploading the dataset
+google_drive_link <- "https://drive.google.com/uc?id=1ndw7a5uzu97iudi21grW7NiovLcc7re1&export=download"
+pizza <- read.csv(file = google_drive_link, header = TRUE)
+head(pizza)
+dim(pizza)
+```
+
+The aim of this project is to predict the calories of pizza. After loading all the relevant libraries along with some additional ones, I loaded the data set and named the data frame as pizza.
+
+This data set consists of the components of Pizza which makes it healthy in which there are 300 rows and 9 columns present.
+
+Following are the names of the 9 columns that are present in this data set:
+
+```{r}
+#Names of different columns present in the data set.
+colnames(pizza)
+```
+
+```{r}
+#glimpse of the dataset
+glimpse(pizza)
+```
+
+When looking at the glimpse of the data set, there are multiple categories that are present in a particular column. For example, the brand column has ten different brands which ranges from A-J. There are different columns that indicate the amount of water, protein, fats, ash, sodium content, carbohydrates, and calories per hundred grams in the sample.
+
+```{r}
+#checking for the NA values
+any(is.na(pizza))
+```
+
+```{r}
+#Missing values in data
+colSums(is.na(pizza))
+```
+
+```{r}
+#Looking at the structure of the dataset
+str(pizza)
+```
+
+Looking at the structure of the pizza data frame, there is one column of characters and integers and majority of the columns possess numerical values.
+
+```{r}
+#counting the numbers per brand of pizza
+pizza %>% count(brand)
+```
+
+In the above R chunk, the total count of that column which has multiple features is mentioned and it is represented in the form of bar chart below.
+
+```{r}
+#counting different brands of pizza through histogram
+ggplot(pizza, aes(brand)) + geom_bar(fill = "red", color = "green") + labs(x = "Brand of pizza", y = "Count") + ggtitle("Count of different brands of pizza") + theme_classic()
+```
+
+In the bar chart of the pizza brand, there are ten codes and their total count is represented. From the visualization, it is clearly visible that H  has the maximum count of 33. The second highest count is of the brands D and J, both at 32 and the minimum count is of the brand C at 27.
+
+```{r}
+#plotting the relationship between brand of pizza and protein content
+ggplot(pizza, aes(brand, prot)) + geom_line(col = "red",group = 1)
+```
+
+The line chart represents the relationship between brand of pizza and protein content and it is clearly evident that pizza of brand C has the maximum protein content.
+
+```{r}
+#plotting the relationship between brand of pizza and carbohydrates
+ggplot(pizza, aes(brand, carb)) + geom_line(col = "green", group = 1) 
+```
+
+The line chart represents the relationship between brand of pizza and carbohydrates content and it is clearly evident that pizza of brand G has the maximum protein content.
+
+```{r}
+#assigning a new data frame name
+pizza_new <- pizza
+```
+
+```{r}
+#putting NA values in the new data frame
+pizza_new$prot[c(19.99, 21.26, 20.23, 18.05, 13.70, 12.93, 26.00, 7.54)] <- NA
+pizza_new$fat[c(42.31, 45.59, 21.39, 21.01, 42.29, 17.37, 16.41, 18)] <- NA
+pizza_new$ash[c(5.34, 5.02, 5.15, 3.55, 3.57, 3.02, 4.66, 1.31, 1.35)] <- NA
+pizza_new$sodium[c(.72, 1.77, 1.64, 1.65, 1.06, .98, .41, .72, .44)] <- NA
+head(pizza_new)
+```
+
+Since there are no NA values present in the original data frame, I decided to insert some NA values into a new data frame so that I can perform mean imputation below. 
+
+```{r}
+#Imputation of multiple columns (i.e. the whole data frame) using mean
+for(i in 1:ncol(pizza_new)) {
+  pizza_new[ , i][is.na(pizza_new[ , i])] <- mean(pizza_new[ , i], na.rm = TRUE)
+}
+head(pizza_new)
+```
+
+Now, I am going to perform the hot-encoding for all the different brands of pizza present in the dataset.
+
+```{r}
+table(pizza_new[pizza_new$brand == "A", "brand"])
+```
+
+```{r}
+#performing hot-encoding for brands A and B
+pizza_new$brand_AB <- ifelse(pizza_new$brand == "A", 1, ifelse(pizza_new$brand == "B", 1, 0))
+```
+
+```{r}
+table(pizza_new$brand_AB)
+```
+
+```{r}
+#performing hot-encoding for brands C and D
+pizza_new$brand_CD <- ifelse(pizza_new$brand == "C", 1, ifelse(pizza_new$brand == "D", 1, 0))
+```
+
+```{r}
+table(pizza_new$brand_CD)
+```
+
+```{r}
+#performing hot-encoding for brands E and F
+pizza_new$brand_EF <- ifelse(pizza_new$brand == "E", 1, ifelse(pizza_new$brand == "F", 1, 0))
+```
+
+```{r}
+table(pizza_new$brand_EF)
+```
+
+```{r}
+#performing hot-encoding for brands G and H
+pizza_new$brand_GH <- ifelse(pizza_new$brand == "G", 1, ifelse(pizza_new$brand == "H", 1, 0))
+```
+
+```{r}
+table(pizza_new$brand_GH)
+```
+
+```{r}
+#performing hot-encoding for brands I and J
+pizza_new$brand_IJ <- ifelse(pizza_new$brand == "I", 1, ifelse(pizza_new$brand == "J", 1, 0))
+```
+
+```{r}
+table(pizza_new$brand_IJ)
+```
+
+```{r}
+head(pizza_new)
+```
+
+```{r}
+#converting the character and integer column to numeric
+pizza[,1] <- as.numeric(factor(pizza[,1]))
+pizza[,2] <- as.numeric(pizza[,2])
+```
+
+```{r}
+#converting the character and integer column to numeric for the hot-encoded data set
+pizza_new[,1] <- as.numeric(factor(pizza_new[,1]))
+pizza_new[,2] <- as.numeric(pizza_new[,2])
+```
+
+In the bar chart of the pizza brand, there are ten codes and their total count is represented. From the visualization, it is clearly visible that H  has the maximum count of 33. The second highest count is of the brands D and J, both at 32 and the minimum count is of the brand C at 27.
+
+For indicating the initial overview of the data and to show different groups of data with different colors I am going to use pairs.panels by using the Psych package. Here, each individual plot is going to show the relationship between the variables in the horizontal and vertical grid. 
+
+```{r}
+#visualizing the distribution of data
+pairs.panels(pizza)
+```
+
+I installed the KLAR package and used pairs.panel to visualize the distribution of the numeric features that are present in the data set.
+
+For checking the normality of each column, I used the Shapiro-Wilk normality test.
+
+```{r}
+#checking the normality of each column
+shapiro.test(pizza$mois)
+shapiro.test(pizza$prot)
+shapiro.test(pizza$fat)
+shapiro.test(pizza$ash)
+shapiro.test(pizza$sodium)
+shapiro.test(pizza$carb)
+shapiro.test(pizza$cal)
+```
+
+Here, I performed a normality test named Shapiro Wilk's test to check the P-value. If it is equal to or less than .05, then the hypothesis of normality will be rejected. This test also calculates W which stands for wilk which is determined by the size of the sample. The samples that have a high value of W are normally distributed and those with a lower value of W are deviating away from normal. I performed this test for all the columns and the sample that has the highest value of W is for the calories ( cal ) column at 6.434e - 13. This also means that the cal column is normally distributed among all the columns. 
+
+```{r}
+#finding the correlation between the columns of data set
+correlation_records <- cor(pizza[c("mois","prot","fat","ash","sodium","carb","cal")],method = "pearson",use = "complete.obs")
+correlation_records
+```
+
+Here, I represented the correlation between the different columns of the pizza data frame by using Pearson's method. From the correlation plot, it is evident that the sodium and fat shares the maximum correlation of 0.9333252 in the entire data frame. The correlation between various other columns also possess a strong correlation. The strongest correlation is indicated by the dark blue square boxes and the weakest correlation is indicated by red boxes in the correlation plot. One of the weakest correlations is between carb and ash columns and has a value of -0.89898837.
+
+```{r}
+#plotting the correlations 
+corrplot(correlation_records, method="color")
+```
+
+Following is the summary of the pizza data frame. There are some values present in specific columns which have a maximum value that is much more than the usual values of that column. For example, in the carb column, the maximum value that is present is 48.640. Such high values are represented by the box plots below in the form of visualization for outliers.
+
+```{r}
+#checking the outliers for moisture column
+ggplot(pizza, aes(mois)) + geom_boxplot(outlier.colour = "red", color = "blue") + labs(x = "Moisture")
+```
+
+```{r}
+#checking the outliers for protein column
+ggplot(pizza, aes(prot)) + geom_boxplot(outlier.colour = "red", color = "green") + labs(x = "Protein")
+```
+
+```{r}
+#checking the outliers for fat column
+ggplot(pizza, aes(fat)) + geom_boxplot(outlier.colour = "red", color = "brown") + labs(x = "Fat")
+```
+
+```{r}
+#checking the outliers for ash column
+ggplot(pizza, aes(ash)) + geom_boxplot(outlier.colour = "red", color = "pink") + labs(x = "Ash")
+```
+
+```{r}
+#checking the outliers for sodium column
+ggplot(pizza, aes(sodium)) + geom_boxplot(outlier.colour = "red", color = "black") + labs(x = "Sodium")
+```
+
+```{r}
+#checking the outliers for carbohydrates column
+ggplot(pizza, aes(carb)) + geom_boxplot(outlier.colour = "orange", color = "yellow") + labs(x = "Carbohydrates")
+```
+
+- In the fat box plot, the outlier is 47.20  i.e., the maximum value of the column. 
+- The outlier of carb box plot is having a value of 48.640.
+
+
+```{r}
+hist(pizza$cal, probability = TRUE)
+lines(density(pizza$cal), col = "brown", lwd = 3)
+```
+
+
+I am also going to visualize how every column of the pizza dataset looks at this point through a univariate visualization which shows histograms of each attribute below.
+
+```{r}
+#histograms each attribute
+par(mfrow=c(2,5))
+for(i in 1:9) {
+  hist(pizza[,i], main=names(pizza)[i])
+}
+```
+
+Following are the density plots for each attribute.
+
+```{r}
+#density plots each attribute
+par(mfrow=c(2,5))
+for(i in 1:9) {
+  plot(density(pizza[,i]), main=names(pizza)[i])
+}
+```
+
+I also created boxplots of each attribute.
+
+```{r}
+#boxplots each attribute
+par(mfrow=c(2,5))
+for(i in 1:9) {
+  boxplot(pizza[,i], main=names(pizza)[i])
+}
+```
+
+Now, I decided to perform the z score standardization by calculating the z score for each column except the brand and ID. With the help of mean and standard deviation, I performed the z score standardization to compare the independent variables with a different sample size to one another in a standard normal distribution. If the value is negative, it would mean that the data available is less than the mean and a positive z score indicates that the raw score of data set is higher than the mean average. 
+
+```{r}
+#performing the z score standardization
+Zscore <- function(column) {
+    z <- abs((mean(column) - column) / sd(column))
+}
+```
+
+```{r}
+columns <- c("mois","prot","fat","ash","sodium","carb","cal")
+```
+
+```{r}
+for (column in columns) {
+    z <- Zscore(pizza_new[[column]])
+    pizza_new[[paste('z.score.', column, sep = '')]] = z}
+head(pizza_new)
+```
+
+In order to adjust the scales of features, I performed a data preprocessing step known as normalization. Thus, after performing normalization of the columns present in the pizza data frame, the statistical distribution of the data got affected. I used the minimum-maximum scaling method to normalize the values where the data values have a range from 0 to 1. Because of this, the effect of outliers on the values of data gets suppressed to a certain extent and the smaller values of the standard deviation of data gets scaled. After performing normalization, the data set is presented as below. 
+
+```{r}
+#Normalization of the data
+min_max_norm <- function(x) {
+    (x - min(x)) / (max(x) - min(x))
+}
+pizza_norm <- as.data.frame(lapply(pizza_new[c(3:8)], min_max_norm))
+```
+
+```{r}
+head(pizza_norm)
+```
+
+So, in the above R chunk, I performed the normalization of data i.e., minimum-maximum normalization. 
+
+```{r}
+#Log transformation of data
+log_mois <- log1p(pizza_new$mois)
+log_prot <- log1p(pizza_new$prot)
+log_fat <- log1p(pizza_new$fat)
+log_ash <- log1p(pizza_new$ash)
+log_sodium <- log1p(pizza_new$sodium)
+log_carb <- log1p(pizza_new$carb)
+log_cal <- log1p(pizza_new$cal)
+```
+
+From visualizations, as well as statistics, data did not look normal. Therefore I performed log transformation of data.
+
+```{r}
+# Combining the transformed variables
+pizza_transformed <- data.frame(log_mois, log_prot, log_fat, log_ash, log_sodium, log_carb, log_cal)
+head(pizza_transformed)
+```
+
+```{r}
+#joining the two data frames
+pizza_join <- cbind(pizza_new, pizza_transformed)
+head(pizza_join)
+```
+
+```{r}
+#using dummy variable for calorie column
+pizza_new$cal <- ifelse(pizza_new$cal > "3", 0, 1)
+```
+
+```{r}
+#joining the two data frames
+new_pizza <- cbind(pizza_new, pizza_norm)
+```
+
+```{r}
+#selecting the appropriate columns
+pizza_df <- subset(new_pizza, select = c(1,22,23,24,25,26,27,9))
+```
+
+```{r}
+#Performing the principal component analysis
+pizza_pca <- prcomp(pizza_df[c(1,2,3,4,5,6,7)], center = TRUE,scale. = TRUE)
+summary(pizza_pca)
+```
+
+Principal component analysis measures the variance in the dataset and here we see that PC1 has the maximum variance. However, as a whole, this data has very low variance.
+
+```{r}
+#install.packages("factoextra")
+library(factoextra)
+fviz_eig(pizza_pca)
+```
+
+```{r}
+screeplot(pizza_pca)
+```
+
+```{r}
+fviz_pca_var(pizza_pca, col.var = "contrib", repel = TRUE)
+```
+
+```{r}
+get_eigenvalue(pizza_pca)
+```
+
+```{r}
+get_pca_var(pizza_pca)
+```
+
+
+Then, I performed the splitting of the data set in the ratio of 80:20 where 80% of the data represents the training set and the remaining 20% represents the validation set. The number of rows for the training set data is 240 and of validation set is 60. The reason for picking 80:20 split is that it is based on Pareto Principle which asserts that 80% of outcomes (or outputs) result from 20% of all causes (or inputs) for any given event. Also, as the data in the testing set already contains known values for the attribute that one wants to predict, it is easy to determine whether the model's guesses are correct. Thus, the training data set is given 80% of the weightage.
+
+```{r}
+#splitting of the data set in the ratio of 80:20
+set.seed(123)
+train.size <- 0.8
+train.index <- sample.int(nrow(pizza_df), round(nrow(pizza_df) * train.size))
+records.train <- pizza_df[train.index,]
+records.validation <- pizza_df[-train.index,]
+nrow(records.train)
+nrow(records.validation)
+```
+
+```{r}
+head(records.train)
+head(records.validation)
+```
+
+```{r}
+#converting the numeric columns to factor
+records.train$cal <- as.factor(records.train$cal)
+records.validation$cal <- as.factor(records.validation$cal)
+```
+
+
+
+#MODEL 1: LOGISTIC REGRESSION MODEL
+
+
+To evaluate the model, I am going to perform 10 fold cross-validation to have a better insight of my data and model. The train function () is going to be used further as this validation would turn the process 10 times. Here, a data set is reserved to should be used in the model for testing purposes. The values of the dependent variable are predicted and the accuracy of the model is calculated here. The advantage of this method is that in each repetition, the data sample is shuffled which leads to different splits of the sample data.
+
+```{r}
+#performing the 10 fold cross validation
+control <- trainControl(method = "cv", number = 10)
+```
+
+```{r}
+#Using glm method for logistic model
+logistic_model <- suppressWarnings(train(cal ~ ., trControl = control, data = records.train, method = "glm"))
+```
+
+```{r}
+summary(logistic_model)
+```
+
+```{r}
+#using predict
+predict_logistic_model <- predict(logistic_model, newdata = records.validation)
+predict_logistic_model
+```
+
+```{r}
+#Finding the accuracy, sensitivity, and specificity through confusion matrix
+confusionMatrix(predict_logistic_model, records.validation$cal)
+# Accuracy, Sensitivity and Specificity
+print("The accuracy of the classification using Logistic regression model is 96.67%")
+print("The Sensitivity of the model is 1")
+print("The Specificity of the model is .9130")
+```
+
+
+
+Here, the accuracy score of logistic regression is 96.67 and balanced accuracy is 95.65. This model also has a sensitivity of 1 and specificity of .91
+
+
+
+MODEL 2: RANDOM FOREST MODEL
+
+
+
+```{r}
+control <- trainControl(method = "cv", number = 10)
+```
+
+```{r}
+#Using rf method for logistic model
+rf_model <- suppressWarnings(train(cal ~ ., trControl = control, data = records.train, method = "rf"))
+```
+
+```{r}
+print(rf_model)
+```
+
+```{r}
+#using predict
+predict_rf_model <- predict(rf_model, newdata = records.validation)
+predict_rf_model
+```
+
+```{r}
+#Finding the accuracy, sensitivity, and specificity through confusion matrix
+confusionMatrix(predict_rf_model, records.validation$cal)
+# Accuracy, Sensitivity and Specificity
+print("The accuracy of the classification using Random forest model is 93.33%")
+print("The Sensitivity of the model is 0.9189")
+print("The Specificity of the model is 0.9565")
+```
+
+Here, random forest model has a lesser accuracy than the logistic regression model with an accuracy of 93.33 and a balanced accuracy of 93.77. But, it has the highest specificity among all the selected models.
+
+
+
+#MODEL 3: KNN MODEL
+
+
+
+```{r}
+control <- trainControl(method = "cv", number = 10)
+```
+
+```{r}
+#Using knn method for logistic model
+knn_model <- suppressWarnings(train(cal ~ ., trControl = control, data = records.train, method = "knn"))
+```
+
+```{r}
+print(knn_model)
+```
+
+```{r}
+#using predict
+predict_knn_model <- predict(knn_model, newdata = records.validation)
+predict_knn_model
+```
+
+```{r}
+#Finding the accuracy, sensitivity, and specificity through confusion matrix
+confusionMatrix(predict_knn_model, records.validation$cal)
+# Accuracy, Sensitivity and Specificity
+print("The accuracy of the classification using KNN model is 88.33%")
+print("The Sensitivity of the model is 0.8649")
+print("The Specificity of the model is 0.9130")
+```
+
+The accuracy of the knn model is 88.33 and balanced accuracy is 88.90 which is the least among the three models.
+
+
+
+MODEL 4: SVM MODEL
+
+
+
+```{r}
+set.seed(123)
+library(e1071)
+svm_model <- svm(cal ~., data = records.train, type = 'C-classification', kernel = 'linear')
+svm_model
+```
+
+```{r}
+#using predict
+predict_svm_model <- predict(svm_model, records.validation)
+predict_svm_model
+```
+
+```{r}
+#Finding the accuracy, sensitivity, and specificity through confusion matrix
+confusionMatrix(predict_svm_model, records.validation$cal)
+
+# Accuracy, Sensitivity and Specificity
+print("The accuracy of the classification using SVM model is 88.33%")
+print("The Sensitivity of the model is 0.8649")
+print("The Specificity of the model is 0.9130")
+```
+
+The accuracy of the SVM model is 88.33 and balanced accuracy is 88.90 which is same as the KNN model.
+
+```{r}
+#Comparing algorithms
+results <- resamples(list(Logistic_Model=logistic_model, RandomForest_Model=rf_model,KNN_Model=knn_model))
+summary(results)
+dotplot(results)
+```
+
+```{r}
+#Hyperparameters tuning for Random forest Model
+hyperparameter_rf <- trainControl(method = "repeatedcv", number = 3, repeats = 5)
+summary(hyperparameter_rf)
+```
+
+```{r}
+# hyperparameters tuning for Random Forest
+rf_hyper <- train(cal ~ ., data = records.train, method = "rf", trControl = hyperparameter_rf, verbose = FALSE)
+summary(rf_hyper)
+```
+
+```{r}
+# hyperparameters tuning for SVM 
+hyperparameter_svm <- trainControl(method = "repeatedcv", number = 3, repeats = 5)
+summary(hyperparameter_svm)
+```
+
+```{r}
+#Hyperparameters tuning for SVM Model
+svm_hyper <- train(cal ~ ., data = records.train, method = "svmPoly", trControl = hyperparameter_svm, verbose = FALSE)
+summary(svm_hyper)
+```
+
+
+
+MODEL COMPARISONS
+
+```{r}
+#Logistic Regression model
+logistic_table <- table(predict_logistic_model, records.validation$cal)
+logistic_prec = as.data.frame(diag(logistic_table) / colSums(logistic_table))[1,]
+logistic_recall = as.data.frame(diag(logistic_table) / rowSums(logistic_table))[1,]
+logistic_recall
+```
+
+```{r}
+#Random Forest model
+forest_table <- table(predict_rf_model, records.validation$cal)
+forest_prec = as.data.frame(diag(forest_table) / colSums(forest_table))[1,]
+forest_recall = as.data.frame(diag(forest_table) / rowSums(forest_table))[1,]
+forest_recall
+```
+
+```{r}
+#KNN model
+knn_table <- table(predict_knn_model, records.validation$cal)
+knn_prec = as.data.frame(diag(knn_table) / colSums(knn_table))[1,]
+knn_recall = as.data.frame(diag(knn_table) / rowSums(knn_table))[1,]
+knn_recall
+```
+
+```{r}
+#SVM model
+svm_table <- table(predict_svm_model, records.validation$cal)
+svm_prec = as.data.frame(diag(svm_table) / colSums(svm_table))[1,]
+svm_recall = as.data.frame(diag(svm_table) / rowSums(svm_table))[1,]
+svm_recall
+```
+
+
+```{r}
+#install.packages("h2o")
+library(h2o)
+
+# initialize the h2o
+h2o.init()
+
+#Creating the training and test h2o data frames
+train_df_h2o<-as.h2o(records.train)
+test_df_h2o<-as.h2o(records.validation)
+
+#Identify predictors and response
+y <- "cal"
+x <- setdiff(names(train_df_h2o), y)
+
+# Number of CV folds
+nfolds <- 5
+
+#Generating a 2-model ensemble (GLM + RF)
+
+#Training & Cross-validating the GBM
+my_logistic <- h2o.glm(x = x,
+                  y = y,
+                  training_frame = train_df_h2o,
+                  nfolds = nfolds,
+                  keep_cross_validation_predictions = TRUE,
+                  seed = 5)
+
+# Training & cross-validating the RF
+my_rf <- h2o.randomForest(x = x,
+                          y = y,
+                          training_frame = train_df_h2o,
+                          nfolds = nfolds,
+                          keep_cross_validation_predictions = TRUE,
+                          seed = 5)
+
+
+# Training a stacked random forest ensemble using the GBM and RF
+ensemble <- h2o.stackedEnsemble(x = x,
+                                y = y,
+                                metalearner_algorithm="drf",
+                                training_frame = train_df_h2o,
+                                base_models = list(my_logistic, my_rf))
+
+
+#Ensemble performance on a test set
+perf <- h2o.performance(ensemble, newdata = test_df_h2o)
+```
+
+```{r}
+#Comparing to base learner performance on the test set
+perf_logistic_test <- h2o.performance(my_logistic, newdata = test_df_h2o)
+perf_rf_test <- h2o.performance(my_rf, newdata = test_df_h2o)
+```
+
+```{r}
+perf_logistic_test
+```
+
+```{r}
+perf_rf_test
+```
+
+To conclude, among all the models that I have selected in this project, the model that I prefer the most is the logistic regression model as it has the maximum accuracy and sensitivity among all the four models used here. 
+
+
+
+THANK YOU
