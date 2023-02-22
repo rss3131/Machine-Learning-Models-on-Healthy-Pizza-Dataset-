@@ -18,7 +18,7 @@ Some of the key features of this project are:
 • Performed the splitting of the data set in the ratio of 80:20 where 80% of the data represents the training set and the remaining 20% represents the validation set.
 • MODEL 1: LOGISTIC REGRESSION MODEL
 • MODEL 2: RANDOM FOREST MODEL
-• MODEL 3: KNN MODEL
-• MODEL 4: SVM MODEL
+• MODEL 3: K-NEAREST NEIGHBORS MODEL
+• MODEL 4: SUPPORT VECTOR MACHINES MODEL
 • Compared the results of all these models using a dotplot
 • Created model ensemble
